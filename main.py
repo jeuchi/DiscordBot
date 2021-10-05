@@ -6,6 +6,9 @@ import time
 import discord
 from ubi import UbiAuth
 from discord.ext import commands
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -78,13 +81,17 @@ async def r6(ctx, username):
   kd_ratio_seasonal_str = '{:.2f}'.format(kd_ratio_seasonal)
 
   if (mmr < 3200):
-    await ctx.send(f'[MMR - {mmr}] LOL NOT EVENT PLAT 3')
+    await ctx.send(f'[MMR - {mmr}] LOL NOT EVEN PLAT 3')
+  elif (mmr < 2500):
+    await ctx.send(f'[MMR - {mmr}] Down bad yikes...')
   else:
     await ctx.send(f'[MMR - {mmr}] Not bad!')
 
   if (kd_ratio_seasonal >= 1):
     await ctx.send(f'[KD Seasonal - {kd_ratio_seasonal_str}] EZ Clap')
-  else:
+  elif (kd_ratio_seasonal > 0.5):
     await ctx.send(f'[KD Seasonal - {kd_ratio_seasonal_str}] Always dead I guess...')
+  else:
+    await ctx.send(f'[KD Seasonal - {kd_ratio_seasonal_str}] OMG QUIT THE GAME YIIIIIKES')
    
 client.run(TOKEN)

@@ -1,71 +1,90 @@
 # bot.py
 import os
 import random
+import time
 
 import discord
-from dotenv import load_dotenv
+from ubi import UbiAuth
+from discord.ext import commands
 
-load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.Client()
+ASK_RESP = ['Outlook is trash bruh',
+            'Yeah...idk cuh',
+            'LOOKING POGGERS DUD',
+            'N <:OMEGALUL:792923100931948585>',
+            'Maybe? stfu leave me alone',
+            'YEP',
+            'No and ur ugly + ratio + L',
+            'Maybe in a different universe'
+]
+
+cooldown = 0
+
+# Ubi authenticate
+email = os.getenv('UBIEMAIL')
+password = os.getenv('UBIPASS')
+ubi = UbiAuth(email=email, password=password)
+
+client = commands.Bot(command_prefix='.')
 
 @client.event
 async def on_ready():
-  print(f'{client.user.name} has connected to Discord!')
+  global cooldown
+  cooldown = time.time()
 
 @client.event
 async def on_member_join(member):
   await member.create_dm()
   await member.dm_channel.send(
-      f'Hi {member.name}, you can go fuck yourself!'
+      f'Hi {member.name}, you can go pog yourself!'
   )
 
-@client.event
-async def on_message(message):
-  if message.author == client.user:
-    return
+@client.command()
+async def ask(ctx, *, question):
+  await ctx.send(f'{random.choice(ASK_RESP)}')
 
-  pepega_quotes = [
-    '😂 HE SAID JOY LOOOL',
-    'WDYM JANOAH',
-    'psdkfpsdfkpsdkfpsdkfpsdkf',
-    'any milkers?',
-    'WHAT JUICER',
-  ]
+@client.command()
+async def clear(ctx, amount=10):
+  await ctx.channel.purge(limit=amount)
 
-  sadge_quotes = [
-    'i guess...',
-    'he\'s never on...',
-    'FUCK',
-    'on my blicky?',
-  ]
+# R6 command
+#   MMR    
+#   KD ratio seasonal
+@client.command()
+async def r6(ctx, username):
+  global cooldown
+  remaining_time = int(time.time() - cooldown)
+  if remaining_time < 10:
+    remaining_time = 10 - remaining_time
+    await ctx.send(f'Cooldown, wait {remaining_time} second(s)')
+    return False
 
-  # @Pepega
-  if message.content == '<@!834247179870666777>':
-    response = random.choice(pepega_quotes)
-    await message.channel.send(response)
+  cooldown = time.time()
 
-  # Detecting messages
-  elif '😂' in message.content.lower():
-    response = '😂 im 12'
-    await message.channel.send(response)
-  elif 'sadge' in message.content.lower():
-    response = random.choice(sadge_quotes)
-    await message.channel.send(response)
-  elif 'pepega' in message.content.lower():
-    response = 'RING RING? SUSHI SUSHI ALLIGATOR.'
-    await message.channel.send(response)
-  elif 'ready' in message.content.lower():
-    response = 'stfu janoah hes busy'
-    await message.channel.send(response)
-  elif 'omegalul' in message.content.lower():
-    response = '<:OMEGALUL:792923100931948585> ❓'
-    await message.channel.send(response)
-  elif '4heed' in message.content.lower():
-    response = 'SO FUNNY DUD'
-    await message.channel.send(response)        
-  elif message.content == 'raise-exception':
-      raise discord.DiscordException
+  link = f'https://public-ubiservices.ubi.com/v3/profiles?namesOnPlatform={username}&platformType=uplay'
+  resp_json = ubi.getData(link)
 
+  userId = resp_json['profiles'][0]['userId']
+  link = f'https://public-ubiservices.ubi.com/v1/spaces/5172a557-50b5-4665-b7db-e3f2e8c5041d/sandboxes/OSBOR_PC_LNCH_A/r6karma/players?board_id=pvp_ranked&season_id=-1&region_id=ncsa&profile_ids={userId}'
+
+  resp_json = ubi.getData(link)
+
+  mmr = resp_json['players'][userId]['mmr']
+  kills = resp_json['players'][userId]['kills']
+  deaths = resp_json['players'][userId]['deaths']
+
+  kd_ratio_seasonal =  (kills / deaths)
+  kd_ratio_seasonal_str = '{:.2f}'.format(kd_ratio_seasonal)
+
+  if (mmr < 3200):
+    await ctx.send(f'[MMR - {mmr}] LOL NOT EVENT PLAT 3')
+  else:
+    await ctx.send(f'[MMR - {mmr}] Not bad!')
+
+  if (kd_ratio_seasonal >= 1):
+    await ctx.send(f'[KD Seasonal - {kd_ratio_seasonal_str}] EZ Clap')
+  else:
+    await ctx.send(f'[KD Seasonal - {kd_ratio_seasonal_str}] Always dead I guess...')
+   
 client.run(TOKEN)

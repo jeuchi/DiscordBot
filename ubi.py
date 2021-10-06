@@ -118,6 +118,8 @@ class Player:
     self.mmr = 0
     self.rank = ''
     self.kd_ratio_seasonal = 0 
+    self.wins = 0
+    self.losses = 0
 
   # Print player summary:
   # Rank, MMR, Seasonal KD
@@ -129,5 +131,7 @@ class Player:
     embed.add_field(name="Rank", value=RANK[self.rank], inline=True)
     embed.add_field(name="MMR", value=self.mmr, inline=True)
     embed.add_field(name="Seasonal KD", value=kd_ratio_seasonal_str, inline=True)
+    embed.add_field(name="Wins", value=self.wins, inline=True)
+    embed.add_field(name="Losses", value=self.losses, inline=True)
       
     return embed

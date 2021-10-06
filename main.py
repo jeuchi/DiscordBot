@@ -27,7 +27,6 @@ cooldown = 0
 # Ubi authenticate.
 email = os.getenv('UBIEMAIL')
 password = os.getenv('UBIPASS')
-ubi = UbiAuth(email=email, password=password)
 
 # Build client.
 client = commands.Bot(command_prefix='.')
@@ -79,6 +78,9 @@ async def r6(ctx, username=None, dbg_set=None):
   # Reset cooldown.
   cooldown = time.time()
 
+  # Create Ubi authentication to avoid expiration.
+  ubi = UbiAuth(email=email, password=password)
+
   # Request user ID from username given.
   link = f'https://public-ubiservices.ubi.com/v3/profiles?namesOnPlatform={username}&platformType=uplay'
   resp_json = ubi.get_data(link)
@@ -114,20 +116,22 @@ async def r6(ctx, username=None, dbg_set=None):
   try:
     player.rank = resp_json['players'][userId]['rank']
     player.mmr = int(resp_json['players'][userId]['mmr'])
+    player.wins = resp_json['players'][userId]['wins']
+    player.losses = int(resp_json['players'][userId]['losses'])
     kills = resp_json['players'][userId]['kills']
     deaths = resp_json['players'][userId]['deaths']
-  except IndexError:
-    util.send_error(ctx, util.Errors.USER_NOT_FOUND)
+  except (IndexError, KeyError) as e:
+    await ctx.send('Unable to find player info.')
     return False
   
-  # Catch 0 deaths
+  # Catch 0 deaths.
   try:
     player.kd_ratio_seasonal =  (kills / deaths)
   except ZeroDivisionError:
     player.kd_ratio_seasonal = kills
+    return False
 
   summary = player.print_summary()
   await ctx.send(embed=summary)
 
-   
 client.run(TOKEN)

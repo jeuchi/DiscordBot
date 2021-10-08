@@ -7,6 +7,7 @@
 import os
 import random
 import time
+import discord 
 from ubi import UbiAuth, Player
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -43,11 +44,12 @@ password = os.getenv('UBIPASS')
 # Build client.
 client = commands.Bot(command_prefix='.')
 
-# Initialize cooldown variable when bot is online.
+# Initialize when bot is online.
 @client.event
 async def on_ready():
   global cooldown
   cooldown = time.time()
+  await client.change_presence(activity=discord.Streaming(name="Rainbow Six Siege", url="https://www.twitch.tv/shaiiko"))
 
 # Introduce new member.
 @client.event

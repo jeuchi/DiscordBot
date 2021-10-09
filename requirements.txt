@@ -3,3 +3,4 @@ python-dotenv
 requests
 youtube-dl
 validators
+pynacl

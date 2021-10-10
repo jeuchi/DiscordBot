@@ -178,6 +178,17 @@ class R6(commands.Cog):
     if dbg:
       await ctx.send(f'[DEBUG-USER-ID] {resp_json}')
 
+    # Check ticket expiration
+    try:
+      expired = resp_json['message']
+    except:
+      expired = False
+    
+    if expired == 'Ticket is expired':
+      await ctx.send('Ticket expired. Try again.')
+      self.authenticated = False
+      return False
+
     # Retrieve player's user ID
     player = Player()
     try:

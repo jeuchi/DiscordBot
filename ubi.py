@@ -88,6 +88,21 @@ class UbiAuth:
     except JSONDecodeError:
       print(f'[get_data] Invalid link: {link}')
       return False
+  
+  def check_expiration(self, resp_json):
+    # Check ticket expiration
+    try:
+      expired = resp_json['message']
+    except:
+      expired = False
+    
+    # If session has expired, reauthenticate
+    if expired == 'Ticket is expired':
+      print('Ticket expired. Trying again')
+      self.authenticated = self.ubi.create_ubi_authentication()
+      expired = True
+
+    return expired
 
 class Player:
   """
@@ -169,25 +184,18 @@ class R6(commands.Cog):
       await ctx.send('Error authenticating with Ubisoft.')
       return False
 
-    # Request user ID from username given
+    # Request user ID from username given and check for session expiration
     link = f'https://public-ubiservices.ubi.com/v3/profiles?namesOnPlatform={username}&platformType=uplay'
     resp_json = self.ubi.get_ubi_data(link=link)
+    expired = self.ubi.check_expiration(resp_json)
+    # Try again with new authentication if expired
+    if expired:
+      resp_json = self.ubi.get_ubi_data(link=link)
     if resp_json is False:
       await ctx.send('Error retrieving player.')
       return False
     if dbg:
       await ctx.send(f'[DEBUG-USER-ID] {resp_json}')
-
-    # Check ticket expiration
-    try:
-      expired = resp_json['message']
-    except:
-      expired = False
-    
-    if expired == 'Ticket is expired':
-      await ctx.send('Ticket expired. Try again.')
-      self.authenticated = False
-      return False
 
     # Retrieve player's user ID
     player = Player()

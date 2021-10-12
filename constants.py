@@ -6,7 +6,7 @@
 import os
 
 NAME = 'Pepega'
-VERSION = '2.00.00'
+VERSION = '2.00.01'
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 APP_ID = '3587dcbb-7f81-457c-9781-0e3f29f6f56a'

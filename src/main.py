@@ -5,16 +5,12 @@
 # Commands to print Rainbow Six Siege stats and ask questions.
 
 import random
-import time
 import discord
 from music import Music
 from discord.ext.commands.core import after_invoke 
 from ubi import R6
 from discord.ext import commands
-from dotenv import load_dotenv
 from constants import ASK_RESP, NAME, VERSION, TOKEN
-
-load_dotenv()
 
 # Build client
 client = commands.Bot(command_prefix='.')

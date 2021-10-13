@@ -15,11 +15,7 @@ from discord.ext import commands
 from json.decoder import JSONDecodeError
 from datetime import datetime, timedelta
 from requests.api import head
-from constants import APP_ID, RANK, RANK_ICONS, EMOTES, SEASON
-
-# Ubi authenticate.
-email = os.getenv('UBIEMAIL')
-password = os.getenv('UBIPASS')
+from constants import APP_ID, EMAIL, PASSWORD, RANK, RANK_ICONS, EMOTES, SEASON
 
 class UbiAuth:
   """
@@ -30,6 +26,11 @@ class UbiAuth:
   def __init__(self, email='', password=''):
     self.token = base64.b64encode((email + ":" + password).encode("utf-8")).decode("utf-8")
     self.app_id = APP_ID
+    self.ticket = ''
+    self.session_id = ''
+    self.session_key = ''
+    self.space_id = ''
+    self.own_user_id = ''
 
   def create_ubi_authentication(self):
     headers = {
@@ -64,6 +65,8 @@ class UbiAuth:
     except (IndexError, KeyError) as e:
       print('Ubisoft authentication failed decoding session keys.')
       return False
+    
+    return True
   
   def get_ubi_data(self, link='http://google.com'):
     headers = {
@@ -80,26 +83,32 @@ class UbiAuth:
       'Connection': 'keep-alive',
       'expiration': f'{(datetime.now() + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S")}.657Z'
     }
-    resp_raw = requests.get(link, headers=headers)
+    try:
+      resp_raw = requests.get(link, headers=headers)
+    except:
+      print(f'Error requesting data: {link} {self}')
+      return False
 
     try:
       resp_json = resp_raw.json()
       return resp_json
     except JSONDecodeError:
-      print(f'[get_data] Invalid link: {link}')
+      print(f'JSON error: Invalid link: {link}')
       return False
   
   def check_expiration(self, resp_json):
-    # Check ticket expiration
+    # Assume not expired
+    expired = False 
+
+    # Check for expiration message
     try:
-      expired = resp_json['message']
+      message = resp_json['message']
     except:
-      expired = False
+      message = ''
     
     # If session has expired, reauthenticate
-    if expired == 'Ticket is expired':
-      print('Ticket expired. Trying again')
-      self.authenticated = self.create_ubi_authentication()
+    if message == 'Ticket is expired':
+      print('Ticket expired. Reauthenticate.')
       expired = True
 
     return expired
@@ -140,7 +149,7 @@ class Player:
 class R6(commands.Cog):
   def __init__(self, bot):
       self.bot = bot
-      self.ubi = UbiAuth(email=email, password=password)
+      self.ubi = UbiAuth(email=EMAIL, password=PASSWORD)
       self.authenticated = False
       self.cooldown = 0
       
@@ -190,14 +199,13 @@ class R6(commands.Cog):
     expired = self.ubi.check_expiration(resp_json)
     # Try again with new authentication if expired
     if expired:
+      self.authenticated = self.create_ubi_authentication()
       resp_json = self.ubi.get_ubi_data(link=link)
     if resp_json is False:
-      await ctx.send('Error retrieving player.')
+      await ctx.send('Error retrieving player ID.')
       return False
     if dbg:
       await ctx.send(f'[DEBUG-USER-ID] {resp_json}')
-
-    # Retrieve player's user ID
     player = Player()
     try:
       user_id = resp_json['profiles'][0]['userId']
@@ -208,14 +216,12 @@ class R6(commands.Cog):
 
     # Request player's info
     link = f'https://public-ubiservices.ubi.com/v1/spaces/5172a557-50b5-4665-b7db-e3f2e8c5041d/sandboxes/OSBOR_PC_LNCH_A/r6karma/players?board_id=pvp_ranked&season_id=-1&region_id=ncsa&profile_ids={user_id}'
-    resp_json = self.ubi.get_ubi_data(link)
+    resp_json = self.ubi.get_ubi_data(link=link)
     if resp_json is False:
       await ctx.send('Error retrieving player info.')
       return False
     if dbg:
       await ctx.send(f'[DEBUG-PLAYER] {resp_json}')
-
-    # Create player info from response
     player.profile_pic = f'https://ubisoft-avatars.akamaized.net/{user_id}/default_146_146.png?appId=3587dcbb-7f81-457c-9781-0e3f29f6f56a'
     player.r6_url = f'https://r6.tracker.network/profile/pc/{username}'
     try:
@@ -238,7 +244,7 @@ class R6(commands.Cog):
 
     # Get player level
     link = f'https://public-ubiservices.ubi.com/v1/profiles/{user_id}/stats/ProgressionClearanceLevel?spaceId=5172a557-50b5-4665-b7db-e3f2e8c5041d'
-    resp_json = self.ubi.get_ubi_data(link)
+    resp_json = self.ubi.get_ubi_data(link=link)
     if resp_json is False:
       await ctx.send('Error retrieving player level.')
       return False
@@ -252,7 +258,7 @@ class R6(commands.Cog):
 
      # Get play time in seconds
     link = f'https://public-ubiservices.ubi.com/v1/profiles/stats?profileIds={user_id}&spaceId=5172a557-50b5-4665-b7db-e3f2e8c5041d&statNames=ProgressionPvPTimePlayed'
-    resp_json = self.ubi.get_ubi_data(link)
+    resp_json = self.ubi.get_ubi_data(link=link)
     if resp_json is False:
       await ctx.send('Error retrieving play time.')
       return False

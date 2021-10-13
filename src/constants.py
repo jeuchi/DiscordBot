@@ -4,11 +4,14 @@
 # Description: Variables to be defined as static across files.
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 NAME = 'Pepega'
 VERSION = '2.00.02'
 TOKEN = os.getenv('DISCORD_TOKEN')
-
+EMAIL = os.getenv('UBIEMAIL')
+PASSWORD = os.getenv('UBIPASS')
 APP_ID = '3587dcbb-7f81-457c-9781-0e3f29f6f56a'
 SEASON = 'Crystal Guard'
 

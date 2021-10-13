@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NAME = 'Pepega'
-VERSION = '2.00.02'
+VERSION = '2.00.03'
 TOKEN = os.getenv('DISCORD_TOKEN')
 EMAIL = os.getenv('UBIEMAIL')
 PASSWORD = os.getenv('UBIPASS')

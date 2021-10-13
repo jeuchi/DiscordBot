@@ -99,7 +99,7 @@ class UbiAuth:
     # If session has expired, reauthenticate
     if expired == 'Ticket is expired':
       print('Ticket expired. Trying again')
-      self.authenticated = self.ubi.create_ubi_authentication()
+      self.authenticated = self.create_ubi_authentication()
       expired = True
 
     return expired

@@ -199,7 +199,7 @@ class R6(commands.Cog):
     expired = self.ubi.check_expiration(resp_json)
     # Try again with new authentication if expired
     if expired:
-      self.authenticated = self.create_ubi_authentication()
+      self.authenticated = self.ubi.create_ubi_authentication()
       resp_json = self.ubi.get_ubi_data(link=link)
     if resp_json is False:
       await ctx.send('Error retrieving player ID.')

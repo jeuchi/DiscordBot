@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NAME = 'Pepega'
-VERSION = '2.00.03'
+VERSION = '2.00.04'
+GITHUB_URL = 'https://github.com/jeuchi/DiscordBot'
+
 TOKEN = os.getenv('DISCORD_TOKEN')
 EMAIL = os.getenv('UBIEMAIL')
 PASSWORD = os.getenv('UBIPASS')

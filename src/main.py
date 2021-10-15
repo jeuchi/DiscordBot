@@ -10,10 +10,19 @@ from music import Music
 from discord.ext.commands.core import after_invoke 
 from ubi import R6
 from discord.ext import commands
-from constants import ASK_RESP, NAME, VERSION, TOKEN
+from constants import ASK_RESP, NAME, VERSION, TOKEN, GITHUB_URL
 
 # Build client
 client = commands.Bot(command_prefix='.')
+
+@client.command()
+async def git(ctx):
+  embed = discord.Embed(title=f'Patch {VERSION} notes', colour=discord.Color.green())
+  async with ctx.typing():
+    embed.set_author(name='GitHub link', url=GITHUB_URL)
+    embed.set_thumbnail(url='https://cdn.discordapp.com/emojis/792923101179805696.png?size=96')
+    embed.description = '-Fixes with Ubisoft ticket expiring\n-Streaming Youtube instead of downloading to improve speedup'
+  await ctx.send(embed=embed)
 
 @client.event
 async def on_ready():
@@ -23,8 +32,7 @@ async def on_ready():
   for guild in client.guilds:
         for channel in guild.text_channels :
             if str(channel) == "general" :
-                await channel.send(f'https://cdn.discordapp.com/emojis/792923101179805696.png?size=96')
-                await channel.send(f'{NAME} is online! Version: {VERSION}')
+                await git(channel)
   await client.change_presence(activity=discord.Streaming(name="Rainbow Six Siege", url="https://www.twitch.tv/shaiiko"))
 
 @client.event
@@ -42,11 +50,6 @@ async def ask(ctx, question=None):
     return False
 
   await ctx.send(f'{random.choice(ASK_RESP)}')
-
-@client.command()
-async def git(ctx):
-  await ctx.send(f'Version: {VERSION}')
-  await ctx.send('https://github.com/jeuchi/DiscordBot')
 
 client.add_cog(Music(client))
 client.add_cog(R6(client))

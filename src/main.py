@@ -43,6 +43,11 @@ async def ask(ctx, question=None):
 
   await ctx.send(f'{random.choice(ASK_RESP)}')
 
+@client.command()
+async def git(ctx):
+  await ctx.send(f'Version: {VERSION}')
+  await ctx.send('https://github.com/jeuchi/DiscordBot')
+
 client.add_cog(Music(client))
 client.add_cog(R6(client))
 client.run(TOKEN)

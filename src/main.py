@@ -29,10 +29,10 @@ async def on_ready():
   """
   Initialize when bot is online.
   """
-  for guild in client.guilds:
-        for channel in guild.text_channels :
-            if str(channel) == "general" :
-                await git(channel)
+  #for guild in client.guilds:
+        #for channel in guild.text_channels :
+            #if str(channel) == "general" :
+                #await git(channel)
   await client.change_presence(activity=discord.Streaming(name="Rainbow Six Siege", url="https://www.twitch.tv/shaiiko"))
 
 @client.event

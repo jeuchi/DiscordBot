@@ -4,16 +4,24 @@
 # Description: Pepega bot used in private server. 
 # Commands to print Rainbow Six Siege stats and ask questions.
 
+import asyncio
 import random
 import discord
 from music import Music
 from discord.ext.commands.core import after_invoke 
 from ubi import R6
+from chatgpt import *
 from discord.ext import commands
 from constants import ASK_RESP, NAME, VERSION, TOKEN, GITHUB_URL
 
 # Build client
-client = commands.Bot(command_prefix='.')
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix='.',intents=intents)
+
+async def main():
+  await client.add_cog(Music(client))
+  await client.add_cog(R6(client))
+  await client.start(TOKEN)
 
 @client.command()
 async def git(ctx):
@@ -41,16 +49,17 @@ async def on_member_join(member):
   await member.dm_channel.send(
       f'Hi {member.name}, welcome and type .help for {NAME} commands!'
   )
+        
+@client.event
+async def on_message(message):
+  if not client.user.mentioned_in(message):
+    await client.process_commands(message)
+    return
+  
+  response = generate_response(message.id, message.content)
+  
+  # Send the response back to the user
+  await message.channel.send(response)
 
-@client.command()
-async def ask(ctx, question=None):
-  if question is None:
-    await ctx.send(f'https://cdn.discordapp.com/emojis/792923101179805696.png?size=96')
-    await ctx.send('Didn\'t type a question!')
-    return False
+asyncio.run(main())
 
-  await ctx.send(f'{random.choice(ASK_RESP)}')
-
-client.add_cog(Music(client))
-client.add_cog(R6(client))
-client.run(TOKEN)

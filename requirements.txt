@@ -5,3 +5,5 @@ youtube-dl
 validators
 pynacl
 ffmpeg
+asyncio
+openai

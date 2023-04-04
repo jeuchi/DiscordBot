@@ -29,7 +29,7 @@ async def git(ctx):
   async with ctx.typing():
     embed.set_author(name='GitHub link', url=GITHUB_URL)
     embed.set_thumbnail(url='https://cdn.discordapp.com/emojis/792923101179805696.png?size=96')
-    embed.description = '-Fixes with Ubisoft ticket expiring\n-Streaming Youtube instead of downloading to improve speedup'
+    embed.description = '- Added AI\n- Ubisoft is still updating API so latest season is incorrect.'
   await ctx.send(embed=embed)
 
 @client.event
